@@ -1,44 +1,70 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: tkn-pv
+spec:
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tkn-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: count-files
 spec:
-  resources:
-    inputs:
-      - name: repo
-        type: git
-        targetPath: code
+  workspaces:
+    - name: output
   steps:
     - name: count
       image: registry.access.redhat.com/ubi8/ubi
-      workingDir: /workspace
       command:
         - /bin/bash
-      args: ['-c', 'echo $(find ./code -type f | wc -l) files in repo']
+      args: ['-c', 'ls $(workspaces.output.path) && echo $(find $(workspaces.output.path) -type f | wc -l) files in repo']
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: count
 spec:
-  resources:
-    - name: git-repo
-      type: git
+  workspaces:
+    - name: shared-repo-data
+      description: | 
+        This workspace contains the cloned repo files, so they can be read by the
+        next task.
+  params:
+    - name: repo-url
+      type: string
+      description: The git repo URL to clone from.
+      default: https://github.com/joellord/handson-tekton.git
   tasks:
+    - name: fetch-source
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-repo-data
+      params:
+        - name: url
+          value: $(params.repo-url)
     - name: count-task
+      runAfter:
+        - fetch-source
       taskRef:
         name: count-files
-      resources:
-        inputs:
-          - name: repo
-            resource: git-repo
----
-apiVersion: tekton.dev/v1alpha1
-kind: PipelineResource
-metadata:
-  name: git-repo
-spec:
-  type: git
-  params:
-    - name: url
-      value: https://github.com/joellord/handson-tekton.git
+      workspaces:
+        - name: output
+          workspace: shared-repo-data
