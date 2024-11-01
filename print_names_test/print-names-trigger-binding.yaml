@@ -1,0 +1,10 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: print-names-trigger-binding
+spec:
+  params:
+  - name: first_name
+    value: $(body.first_name)
+  - name: last_name
+    value: $(body.last_name)

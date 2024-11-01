@@ -1,0 +1,16 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: Trigger
+metadata:
+  name: print-names-trigger
+spec:
+  interceptors:
+    - name: cel-interceptor
+      ref:
+        name: cel
+      params:
+        - name: filter
+          value: "has(body.first_name) && has(body.last_name)"
+  bindings:
+    - ref: print-names-trigger-binding
+  template:
+    ref: print-names-trigger-template

@@ -1,0 +1,9 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: print-names-el
+  namespace: default
+spec:
+  triggers:
+    - triggerRef: print-names-trigger
+  serviceAccountName: tekton-triggers-example-sa

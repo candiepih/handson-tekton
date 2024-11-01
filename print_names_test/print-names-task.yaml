@@ -1,0 +1,18 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: print-names
+spec:
+  params:
+    - name: first_name
+      description: First name of person
+      type: string
+    - name: last_name
+      description: Last name of person
+      type: string
+  steps:
+    - name: print-names
+      image: registry.access.redhat.com/ubi8/ubi
+      command:
+        - /bin/bash
+      args: ['-c', echo $(params.first_name) $(params.last_name)]

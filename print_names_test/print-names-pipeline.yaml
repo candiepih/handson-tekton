@@ -1,0 +1,21 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: print-names-pipeline
+spec:
+  params:
+    - name: first_name
+      type: string
+      description: The first name of the person
+    - name: last_name
+      type: string
+      description: The last name of the person
+  tasks:
+    - name: print-names-task
+      taskRef:
+        name: print-names
+      params:
+        - name: first_name
+          value: $(params.first_name)
+        - name: last_name
+          value: $(params.last_name)

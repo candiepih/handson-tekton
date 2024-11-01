@@ -1,0 +1,23 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: print-names-trigger-template
+spec:
+  params:
+    - name: first_name
+      description: The first name to print
+    - name: last_name
+      description: The last name to print
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: print-names-pipelinerun-
+    spec:
+      pipelineRef:
+        name: print-names-pipeline
+      params:
+      - name: first_name
+        value: $(tt.params.first_name)
+      - name: last_name
+        value: $(tt.params.last_name)
